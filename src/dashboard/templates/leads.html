@@ -1,0 +1,103 @@
+{% extends "base.html" %}
+
+{% block title %}Leads — Lead Machine{% endblock %}
+{% block page_title %}Leads Database{% endblock %}
+
+{% block content %}
+<div class="section-card">
+    <div class="section-header">
+        <h2>All Leads</h2>
+        <span class="badge">{{ leads|length }}</span>
+    </div>
+
+    <!-- Filters -->
+    <form class="filters-bar" method="GET" action="/leads" style="display: flex; gap: 10px; margin-bottom: 20px;">
+        <div class="filter-group">
+            <select name="campaign_id" onchange="this.form.submit()" class="form-control">
+                <option value="">All Campaigns</option>
+                {% for c in campaigns %}
+                <option value="{{ c.id }}" {% if current_campaign_id == c.id|string %}selected{% endif %}>{{ c.name }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="filter-group">
+            <select name="status" onchange="this.form.submit()" class="form-control">
+                <option value="">All Statuses</option>
+                <option value="new" {% if current_status == 'new' %}selected{% endif %}>New</option>
+                <option value="to_contact" {% if current_status == 'to_contact' %}selected{% endif %}>To Contact</option>
+                <option value="in_progress" {% if current_status == 'in_progress' %}selected{% endif %}>In Progress</option>
+                <option value="closed_won" {% if current_status == 'closed_won' %}selected{% endif %}>Closed Won</option>
+                <option value="closed_lost" {% if current_status == 'closed_lost' %}selected{% endif %}>Closed Lost</option>
+            </select>
+        </div>
+        <div class="filter-group" style="flex-grow: 1;">
+            <input type="text" name="search" placeholder="Search businesses..." value="{{ current_search }}" onchange="this.form.submit()" class="form-control" style="width: 100%;">
+        </div>
+    </form>
+
+    {% if leads %}
+    <div class="table-wrapper">
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>Score</th>
+                    <th>Business</th>
+                    <th>Status</th>
+                    <th>Owner</th>
+                    <th>Phone</th>
+                    <th>Website</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for lead in leads %}
+                <tr>
+                    <td>
+                        <span class="score-badge" style="font-weight:bold; color: {% if lead.quality_score >= 50 %}#10b981{% else %}#f59e0b{% endif %}">
+                            {{ lead.quality_score }}
+                        </span>
+                    </td>
+                    <td class="td-bold">{{ lead.business_name }}</td>
+                    <td>
+                        {% set status = lead.status_info.status if lead.status_info else 'new' %}
+                        {% set color = '#6b7280' %}
+                        {% if status == 'to_contact' %}{% set color = '#f59e0b' %}{% endif %}
+                        {% if status == 'in_progress' %}{% set color = '#3b82f6' %}{% endif %}
+                        {% if status == 'closed_won' %}{% set color = '#10b981' %}{% endif %}
+                        {% if status == 'closed_lost' %}{% set color = '#ef4444' %}{% endif %}
+                        <span class="status-badge" style="background:{{ color }}; padding: 4px 8px; border-radius: 4px; font-size: 12px; color: white;">
+                            {{ status|replace('_', ' ')|title }}
+                        </span>
+                    </td>
+                    <td>
+                        {% if lead.contact and lead.contact.name %}
+                            {{ lead.contact.name }}
+                        {% else %}
+                            <span style="color:#6b7280; font-size:12px;">Unknown</span>
+                        {% endif %}
+                    </td>
+                    <td>{{ lead.phone or '—' }}</td>
+                    <td>
+                        {% if lead.website_url %}
+                            <a href="{{ lead.website_url }}" target="_blank" style="color:#3b82f6; text-decoration:none;">Visit</a>
+                        {% else %}
+                            <span style="color:#10b981; font-weight:bold;">No Website!</span>
+                        {% endif %}
+                    </td>
+                    <td class="td-actions">
+                        <a href="/leads/{{ lead.id }}" class="btn btn-sm btn-primary" style="background:#3b82f6; color:white; padding:4px 10px; text-decoration:none; border-radius:4px;">Details</a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <div class="empty-state" style="text-align:center; padding: 40px; color: #9ca3af;">
+        <div class="empty-icon" style="font-size: 40px; margin-bottom: 10px;">🔍</div>
+        <h3>No leads found</h3>
+        <p>Try adjusting your filters or running a new campaign.</p>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

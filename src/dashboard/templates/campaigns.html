@@ -1,0 +1,136 @@
+{% extends "base.html" %}
+
+{% block title %}Campaigns — Lead Machine{% endblock %}
+{% block page_title %}Campaigns{% endblock %}
+
+{% block content %}
+<!-- Create Campaign Form -->
+<div class="section-card">
+    <div class="section-header">
+        <h2>New Campaign</h2>
+    </div>
+    <form action="/campaigns/create" method="POST" class="campaign-form" id="create-campaign-form">
+        <div class="form-grid">
+            <div class="form-group">
+                <label for="campaign-name">Campaign Name</label>
+                <input type="text" id="campaign-name" name="name" placeholder="e.g. NYC Cafes Q2" required>
+            </div>
+            <div class="form-group">
+                <label for="campaign-niche">Niche</label>
+                <select id="campaign-niche" name="niche" required>
+                    <option value="">Select niche...</option>
+                    <option value="Cafes">☕ Cafes</option>
+                    <option value="Restaurants">🍽️ Restaurants</option>
+                    <option value="Gyms">💪 Gyms</option>
+                    <option value="Salons">💇 Salons</option>
+                    <option value="Barbershops">✂️ Barbershops</option>
+                    <option value="Spas">🧖 Spas</option>
+                    <option value="Bakeries">🧁 Bakeries</option>
+                    <option value="Pet Stores">🐾 Pet Stores</option>
+                    <option value="Florists">🌸 Florists</option>
+                    <option value="Car Washes">🚗 Car Washes</option>
+                    <option value="Dental Clinics">🦷 Dental Clinics</option>
+                    <option value="Laundry Services">👔 Laundry Services</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="campaign-city">City</label>
+                <input type="text" id="campaign-city" name="city" placeholder="e.g. New York" required>
+            </div>
+            <div class="form-group">
+                <label for="campaign-country">Country</label>
+                <select id="campaign-country" name="country">
+                    <option value="US">🇺🇸 United States</option>
+                    <option value="UK">🇬🇧 United Kingdom</option>
+                    <option value="CA">🇨🇦 Canada</option>
+                    <option value="AU">🇦🇺 Australia</option>
+                </select>
+            </div>
+        </div>
+        <button type="submit" class="btn btn-primary" id="btn-create-campaign">
+            ⚡ Create Campaign
+        </button>
+    </form>
+</div>
+
+<!-- Campaign List -->
+<div class="section-card">
+    <div class="section-header">
+        <h2>All Campaigns</h2>
+        <span class="badge">{{ campaigns|length }}</span>
+    </div>
+
+    {% if campaigns %}
+    <div class="table-wrapper">
+        <table class="data-table" id="campaigns-table">
+            <thead>
+                <tr>
+                    <th>Campaign</th>
+                    <th>Niche</th>
+                    <th>Location</th>
+                    <th>Status</th>
+                    <th>Found / Qualified</th>
+                    <th>Last Run</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for c in campaigns %}
+                <tr>
+                    <td class="td-bold">{{ c.name }}</td>
+                    <td><span class="tag">{{ c.niche }}</span></td>
+                    <td>{{ c.city }}, {{ c.country }}</td>
+                    <td>
+                        {% if c.status == 'completed' %}
+                            <span class="status-badge" style="background:#10b981">Completed</span>
+                        {% elif c.status == 'running' %}
+                            <span class="status-badge" style="background:#3b82f6">
+                                <span class="spinner"></span> Running
+                            </span>
+                        {% elif c.status == 'failed' %}
+                            <span class="status-badge" style="background:#ef4444" title="{{ c.error_message or '' }}">Failed</span>
+                        {% else %}
+                            <span class="status-badge" style="background:#6b7280">Pending</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <span class="stat-pair">
+                            <span>{{ c.total_found }}</span>
+                            <span class="stat-divider">/</span>
+                            <span class="text-success">{{ c.total_qualified }}</span>
+                        </span>
+                    </td>
+                    <td>{{ c.last_run_at.strftime('%b %d, %H:%M') if c.last_run_at else '—' }}</td>
+                    <td class="td-actions">
+                        {% if c.status != 'running' %}
+                        <form action="/campaigns/{{ c.id }}/run" method="POST" style="display:inline">
+                            <button type="submit" class="btn btn-sm btn-primary" title="Run pipeline">
+                                ▶ Run
+                            </button>
+                        </form>
+                        {% endif %}
+                        {% if c.total_qualified > 0 %}
+                        <a href="/leads?campaign_id={{ c.id }}" class="btn btn-sm btn-outline">
+                            View Leads
+                        </a>
+                        {% endif %}
+                        <form action="/campaigns/{{ c.id }}/delete" method="POST" style="display:inline" onsubmit="return confirm('Delete this campaign and all its leads?')">
+                            <button type="submit" class="btn btn-sm btn-outline" style="color:#ef4444;border-color:#ef4444" title="Delete campaign">
+                                🗑
+                            </button>
+                        </form>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <div class="empty-state">
+        <div class="empty-icon">🚀</div>
+        <h3>Ready to launch</h3>
+        <p>Create your first campaign above to start finding leads.</p>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

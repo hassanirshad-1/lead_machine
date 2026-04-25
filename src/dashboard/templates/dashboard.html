@@ -1,0 +1,86 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard — Lead Machine{% endblock %}
+{% block page_title %}Dashboard{% endblock %}
+
+{% block content %}
+<!-- KPI Cards -->
+<div class="kpi-grid">
+    <div class="kpi-card" id="kpi-total-leads">
+        <div class="kpi-value">{{ total_leads }}</div>
+        <div class="kpi-label">Total Leads</div>
+        <div class="kpi-icon">👥</div>
+    </div>
+    <div class="kpi-card kpi-accent" id="kpi-qualified">
+        <div class="kpi-value">{{ qualified_leads }}</div>
+        <div class="kpi-label">Qualified (Score ≥ 50)</div>
+        <div class="kpi-icon">🎯</div>
+    </div>
+    <div class="kpi-card kpi-warning" id="kpi-to-contact">
+        <div class="kpi-value">{{ to_contact }}</div>
+        <div class="kpi-label">Ready to Contact</div>
+        <div class="kpi-icon">📞</div>
+    </div>
+    <div class="kpi-card kpi-success" id="kpi-closed">
+        <div class="kpi-value">{{ closed_won }}</div>
+        <div class="kpi-label">Closed Won 🎉</div>
+        <div class="kpi-icon">💰</div>
+    </div>
+</div>
+
+<!-- Recent Campaigns -->
+<div class="section-card">
+    <div class="section-header">
+        <h2>Recent Campaigns</h2>
+        <a href="/campaigns" class="btn btn-sm btn-outline">View All →</a>
+    </div>
+
+    {% if campaigns %}
+    <div class="table-wrapper">
+        <table class="data-table" id="recent-campaigns-table">
+            <thead>
+                <tr>
+                    <th>Campaign</th>
+                    <th>Niche</th>
+                    <th>City</th>
+                    <th>Status</th>
+                    <th>Found</th>
+                    <th>Qualified</th>
+                    <th>Created</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for c in campaigns %}
+                <tr>
+                    <td class="td-bold">{{ c.name }}</td>
+                    <td><span class="tag">{{ c.niche }}</span></td>
+                    <td>{{ c.city }}, {{ c.country }}</td>
+                    <td>
+                        {% if c.status == 'completed' %}
+                            <span class="status-badge" style="background:#10b981">Completed</span>
+                        {% elif c.status == 'running' %}
+                            <span class="status-badge" style="background:#3b82f6">Running</span>
+                        {% elif c.status == 'failed' %}
+                            <span class="status-badge" style="background:#ef4444">Failed</span>
+                        {% else %}
+                            <span class="status-badge" style="background:#6b7280">Pending</span>
+                        {% endif %}
+                    </td>
+                    <td>{{ c.total_found }}</td>
+                    <td>{{ c.total_qualified }}</td>
+                    <td>{{ c.created_at.strftime('%b %d, %Y') if c.created_at else '-' }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <div class="empty-state">
+        <div class="empty-icon">🎯</div>
+        <h3>No campaigns yet</h3>
+        <p>Create your first campaign to start discovering leads.</p>
+        <a href="/campaigns" class="btn btn-primary">Create Campaign</a>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Lead Machine — Outbound lead generation tool for discovering businesses without digital presence">
+    <title>{% block title %}Lead Machine{% endblock %}</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/static/style.css">
+    <script src="https://unpkg.com/htmx.org@2.0.4" integrity="sha384-HGfztofotfshcF7+8n44JQL2oJmowVChPTg48S+jvZoztPfvwD79OC/LTtG6dMp+" crossorigin="anonymous"></script>
+</head>
+<body>
+    <!-- Sidebar Navigation -->
+    <nav class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <div class="logo">
+                <span class="logo-icon">⚡</span>
+                <span class="logo-text">Lead Machine</span>
+            </div>
+        </div>
+
+        <div class="sidebar-nav">
+            <a href="/" class="nav-link {% if request.url.path == '/' %}active{% endif %}" id="nav-dashboard">
+                <span class="nav-icon">📊</span>
+                <span>Dashboard</span>
+            </a>
+            <a href="/campaigns" class="nav-link {% if '/campaigns' in request.url.path %}active{% endif %}" id="nav-campaigns">
+                <span class="nav-icon">🎯</span>
+                <span>Campaigns</span>
+            </a>
+            <a href="/leads" class="nav-link {% if '/leads' in request.url.path and '/campaigns' not in request.url.path %}active{% endif %}" id="nav-leads">
+                <span class="nav-icon">👥</span>
+                <span>Leads</span>
+            </a>
+            <a href="/api/leads/export/csv" class="nav-link" id="nav-export">
+                <span class="nav-icon">📥</span>
+                <span>Export CSV</span>
+            </a>
+        </div>
+
+        <div class="sidebar-footer">
+            <div class="sidebar-version">v0.1.0 — Phase 1 MVP</div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <header class="page-header">
+            <h1 id="page-title">{% block page_title %}Dashboard{% endblock %}</h1>
+            <div class="header-actions">
+                {% block header_actions %}{% endblock %}
+            </div>
+        </header>
+
+        <div class="content-area">
+            {% block content %}{% endblock %}
+        </div>
+    </main>
+</body>
+</html>

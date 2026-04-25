@@ -1,0 +1,76 @@
+{% extends "base.html" %}
+{% block title %}{{ lead.business_name }} — Lead Machine{% endblock %}
+{% block page_title %}Lead Detail{% endblock %}
+
+{% block content %}
+<div class="detail-grid">
+    <!-- Main Info Card -->
+    <div class="section-card detail-main">
+        <div class="detail-header">
+            <div>
+                <h2 class="detail-name">{{ lead.business_name }}</h2>
+                <span class="tag">{{ lead.business_type or 'Business' }}</span>
+            </div>
+            <div class="score-badge {% if lead.quality_score >= 70 %}score-hot{% elif lead.quality_score >= 50 %}score-warm{% else %}score-cold{% endif %} score-lg">
+                {{ lead.quality_score }}
+            </div>
+        </div>
+        <div class="detail-fields">
+            <div class="detail-field"><span class="field-label">📍 Address</span><span>{{ lead.address or '—' }}</span></div>
+            <div class="detail-field"><span class="field-label">📞 Phone</span><span>{% if lead.phone %}<a href="tel:{{ lead.phone }}">{{ lead.phone }}</a>{% else %}—{% endif %}</span></div>
+            <div class="detail-field"><span class="field-label">🌐 Website</span>
+                <span>{% if lead.website_type == 'none' %}<span class="tag tag-success">No Website</span>{% elif lead.website_type == 'social_only' %}<a href="{{ lead.website_url }}" target="_blank">{{ lead.website_url }}</a> <span class="tag tag-warning">Social Only</span>{% else %}<a href="{{ lead.website_url }}" target="_blank">{{ lead.website_url }}</a>{% endif %}</span>
+            </div>
+            <div class="detail-field"><span class="field-label">⭐ Rating</span><span>{{ '%.1f'|format(lead.rating) if lead.rating else '—' }} ({{ lead.review_count or 0 }} reviews)</span></div>
+            <div class="detail-field"><span class="field-label">📍 Maps</span><span>{% if lead.google_maps_url %}<a href="{{ lead.google_maps_url }}" target="_blank">View on Google Maps →</a>{% else %}—{% endif %}</span></div>
+            <div class="detail-field"><span class="field-label">📋 Campaign</span><span>{{ lead.campaign.name if lead.campaign else '—' }}</span></div>
+        </div>
+    </div>
+
+    <!-- Sidebar: Contact & Status -->
+    <div class="detail-sidebar">
+        <!-- Contact Card -->
+        <div class="section-card">
+            <h3>👤 Contact Info</h3>
+            {% if lead.contact and lead.contact.name %}
+            <div class="detail-fields">
+                <div class="detail-field"><span class="field-label">Name</span><span>{{ lead.contact.name }}</span></div>
+                <div class="detail-field"><span class="field-label">Email</span><span>{{ lead.contact.email or '—' }}</span></div>
+                <div class="detail-field"><span class="field-label">LinkedIn</span><span>{% if lead.contact.linkedin_url %}<a href="{{ lead.contact.linkedin_url }}" target="_blank">Profile →</a>{% else %}—{% endif %}</span></div>
+                <div class="detail-field"><span class="field-label">Source</span><span class="tag">{{ lead.contact.source }}</span></div>
+            </div>
+            {% else %}
+            <p class="td-muted">No contact info found yet. Enrichment will be improved in Phase 2.</p>
+            {% endif %}
+        </div>
+
+        <!-- Status Update Card -->
+        <div class="section-card">
+            <h3>📋 Pipeline Status</h3>
+            <form hx-patch="/leads/{{ lead.id }}/status" hx-target="#status-display" hx-swap="innerHTML" class="status-form">
+                <div class="form-group">
+                    <label for="status-select">Status</label>
+                    <select name="status" id="status-select" class="filter-select">
+                        {% set current = lead.status_info.status if lead.status_info else 'new' %}
+                        {% for s in ['new','to_contact','in_progress','contacted','closed_won','closed_lost','not_interested'] %}
+                        <option value="{{ s }}" {% if current == s %}selected{% endif %}>{{ s.replace('_',' ').title() }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="status-notes">Notes</label>
+                    <textarea name="notes" id="status-notes" class="filter-input" rows="3" placeholder="Add notes...">{{ lead.status_info.notes if lead.status_info and lead.status_info.notes else '' }}</textarea>
+                </div>
+                <button type="submit" class="btn btn-primary btn-sm">Update Status</button>
+            </form>
+            <div id="status-display" style="margin-top:0.75rem">
+                {% set sc = {'new':'#6b7280','to_contact':'#f59e0b','in_progress':'#3b82f6','contacted':'#8b5cf6','closed_won':'#10b981','closed_lost':'#ef4444','not_interested':'#6b7280'} %}
+                {% set cs = lead.status_info.status if lead.status_info else 'new' %}
+                <span class="status-badge" style="background:{{ sc.get(cs,'#6b7280') }}">{{ cs.replace('_',' ').title() }}</span>
+            </div>
+        </div>
+    </div>
+</div>
+
+<a href="/leads" class="btn btn-outline" style="margin-top:1.5rem">← Back to Leads</a>
+{% endblock %}
